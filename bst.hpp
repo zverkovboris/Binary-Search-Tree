@@ -71,7 +71,7 @@ public:
         }
         return copy;
     }
-    void Remove(Node* tmp)
+   void Remove(Node* tmp)
     {
         if (tmp->Left == nullptr)
         {
@@ -82,7 +82,7 @@ public:
             tmp->Right->Parent = tmp->Parent;
             return;
         }
-        else if (tmp->Right = nullptr)
+        else if (tmp->Right == nullptr)
         {
             if (tmp->Parent->Left == tmp)
                 tmp->Parent->Left = tmp->Left;
@@ -93,15 +93,13 @@ public:
         }
         else
         {
-            Node* n = tmp->Left;
-            Node* copy = n;
-            do
+            Node* copy = tmp->Right;
+            while (copy->Left != nullptr)
             {
-                n = copy->Right;
-                copy = copy->Right;
-            } while (copy->Right != nullptr);
-            tmp->Value = n->Value;
-            n->Parent->Right = nullptr;
+                copy = copy->Left;
+            }
+            tmp->Value = copy->Value;
+            copy->Parent->Left = nullptr;
         }
     }
 private:
