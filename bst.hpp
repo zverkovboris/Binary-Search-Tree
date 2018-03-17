@@ -21,7 +21,20 @@ public:
         Element->Right = nullptr;
         Element->Value = 0;
     }
-    ~BinarySearchTree() = default;
+    ~BinarySearchTree()
+    {
+        Delete(Element);
+    };
+    void Delete(Node* el)
+    {
+        if (el != nullptr)
+        {
+            Delete(el->Left);
+            Delete(el->Right);
+            delete el;
+        }
+        return;
+    }
 
     void Add(const T& element)
     {
@@ -36,8 +49,8 @@ public:
                     tmp->Parent = copy;
                     copy->Left = tmp;
                     tmp->Value = element;
-                    tmp->Left = 0;
-                    tmp->Right = 0;
+                    tmp->Left = nullptr;
+                    tmp->Right = nullptr;
                     return;
                 }
                 copy = copy->Left;
