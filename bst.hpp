@@ -112,7 +112,9 @@ public:
                 copy = copy->Left;
             }
             tmp->Value = copy->Value;
+            Node * del = copy->Parent->Left;
             copy->Parent->Left = nullptr;
+            delete del;
         }
     }
 private:
