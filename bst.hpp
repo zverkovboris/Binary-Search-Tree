@@ -11,19 +11,22 @@ public:
         Node* Left;
         Node* Right;
         T Value;
+        Node()
+        {
+            this->Parent = nullptr;
+            this->Left = nullptr;
+            this->Right = nullptr;
+            this->Value = T();
+        }
     };
 
     BinarySearchTree()
     {
-        Element = new Node;
-        Element->Parent = nullptr;
-        Element->Left = nullptr;
-        Element->Right = nullptr;
-        Element->Value = 0;
+        Root = new Node();
     }
     ~BinarySearchTree()
     {
-        Delete(Element);
+        Delete(Root);
     };
     void Delete(Node* el)
     {
@@ -35,22 +38,23 @@ public:
         }
         return;
     }
-
+    Node* Insert(Node* parent, const T& value) const
+    {
+        Node* tmp = new Node();
+        tmp->Parent = parent;
+        tmp->Value = value;
+        return tmp;
+    }
     void Add(const T& element)
     {
-        Node* copy = Element;
-        while (copy->Value != 0)
+        Node* copy = Root;
+        while (copy->Value != T())
         {
             if (element < copy->Value)
             {
                 if (copy->Left == nullptr)
                 {
-                    Node* tmp = new Node;
-                    tmp->Parent = copy;
-                    copy->Left = tmp;
-                    tmp->Value = element;
-                    tmp->Left = nullptr;
-                    tmp->Right = nullptr;
+                    copy->Left = Insert(copy, element);
                     return;
                 }
                 copy = copy->Left;
@@ -59,22 +63,17 @@ public:
             {
                 if (copy->Right == nullptr)
                 {
-                    Node* tmp = new Node;
-                    tmp->Parent = copy;
-                    copy->Right = tmp;
-                    tmp->Value = element;
-                    tmp->Left = nullptr;
-                    tmp->Right = nullptr;
+                    copy->Right = Insert(copy, element);
                     return;
                 }
                 copy = copy->Right;
             }
         }
-        Element->Value = element;
+        Root->Value = element;
     }
     Node* Find(const T& element)
     {
-        Node* copy = Element;
+        Node* copy = Root;
         while (copy->Value != element)
         {
             if (copy->Value > element)
@@ -84,41 +83,35 @@ public:
         }
         return copy;
     }
-   void Remove(Node* tmp)
+    void Remove(Node* tmp)
     {
-        if (tmp->Left == nullptr)
+        Node* first = tmp->Left;
+        Node* second = tmp->Right;
+        for (size_t i = 0; i != 2; ++i)
         {
-            if (tmp->Parent->Left == tmp)
-                tmp->Parent->Left = tmp->Right;
-            else
-                tmp->Parent->Right = tmp->Right;
-            tmp->Right->Parent = tmp->Parent;
-            return;
-        }
-        else if (tmp->Right == nullptr)
-        {
-            if (tmp->Parent->Left == tmp)
-                tmp->Parent->Left = tmp->Left;
-            else
-                tmp->Parent->Right = tmp->Left;
-            tmp->Left->Parent = tmp->Parent;
-            return;
-        }
-        else
-        {
-            Node* copy = tmp->Right;
-            while (copy->Left != nullptr)
+            if (first == nullptr)
             {
-                copy = copy->Left;
+                if (tmp->Parent->Left == tmp)
+                    tmp->Parent->Left = second;
+                else
+                    tmp->Parent->Right = second;
+                second->Parent = tmp->Parent;
+                return;
             }
-            tmp->Value = copy->Value;
-            Node * del = copy->Parent->Left;
-            copy->Parent->Left = nullptr;
-            delete del;
+            std::swap(first, second);
         }
+        Node* copy = tmp->Right;
+        while (copy->Left != nullptr)
+        {
+            copy = copy->Left;
+        }
+        tmp->Value = copy->Value;
+        Node * del = copy->Parent->Left;
+        copy->Parent->Left = nullptr;
+        delete del;
     }
 private:
-    Node* Element;
+    Node* Root;
 };
 template<class T>
 struct Node
@@ -132,32 +125,24 @@ struct Node
 template<class T>
 bool isBST(Node<T>* root)
 {
-    Node<T>* par = root->Parent;
-    Node<T>* copy = root;
-    while (par != nullptr)
+    if (root == nullptr)
     {
-        if (par->Left == copy)
+        return true;
+    }
+    Node<T>* copy = root;
+    while (copy->Parent != nullptr)
+    {
+        if (copy->Parent->Left == copy)
         {
-            if (par->Value <= root->Value)
+            if (copy->Parent->Value <= root->Value)
                 return false;
         }
         else
         {
-            if (par->Value > root->Value)
+            if (copy->Parent->Value > root->Value)
                 return false;
         }
-        copy = par;
-        par = par->Parent;
+        copy = copy->Parent;
     }
-    bool left = false;
-    bool right = false;
-    if (root->Left != nullptr)
-        left = isBST<T>(root->Left);
-    else
-        left = true;
-    if (root->Right != nullptr)
-        right = isBST<T>(root->Right);
-    else
-        right = true;
-    return (left && right);
+    return isBST<T>(root->Left) && isBST<T>(root->Right);
 }
